@@ -3,6 +3,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import org.example.dtos.*
 import org.example.utils.TeamCityApiClient
+import org.example.utils.TestDataProvider
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
@@ -14,12 +15,10 @@ import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TeamCityTest {
-    private val projectName = "SimpleMavenSample"
-    private val githubUrl = "https://github.com/mkjetbrains/SimpleMavenSample"
-    private val buildConfigurationName = "MavenBuildTest"
     private lateinit var httpClient: HttpClient
     private lateinit var apiClient: TeamCityApiClient
     private lateinit var projectId: String
+    private val testDataProvider: TestDataProvider = TestDataProvider()
 
     @BeforeAll
     fun setup() {
@@ -44,7 +43,7 @@ class TeamCityTest {
     @Test
     @DisplayName("Should create a project successfully")
     fun testCreateProject() {
-        val project = ProjectRequestDto(projectName)
+        val project = testDataProvider.getObject<ProjectRequestDto>("project")
 
         projectId = apiClient.createResource("projects", project)
 
@@ -54,11 +53,10 @@ class TeamCityTest {
     @Test
     @DisplayName("Should create a vcs root successfully")
     fun testCreateVcsRoot() {
-        val project = ProjectRequestDto(projectName)
+        val project = testDataProvider.getObject<ProjectRequestDto>("project")
         projectId = apiClient.createResource("projects", project)
-        val vcsRoot = VcsRootRequestDto(githubUrl, "jetbrains.git", Project(projectId),
-            Properties(arrayListOf(Property("authMethod", "ANONYMOUS"), Property("branch", "refs/heads/master"), Property("url", githubUrl)))
-        )
+        val vcsRoot = testDataProvider.getObject<VcsRootRequestDto>("vcs-root")
+        vcsRoot.project.id = projectId
 
         val vcsRootId = apiClient.createResource("vcs-roots", vcsRoot)
 
@@ -68,11 +66,10 @@ class TeamCityTest {
     @Test
     @DisplayName("Should create a build type successfully")
     fun testCreateBuildType() {
-        val project = ProjectRequestDto(projectName)
+        val project = testDataProvider.getObject<ProjectRequestDto>("project")
         projectId = apiClient.createResource("projects", project)
-        val buildType = BuildTypeRequestDto(buildConfigurationName, Project(projectId), BuildTypeSteps(
-                    arrayListOf(BuildTypeStep("MavenBuildTestStep", "Maven2", Properties(
-                        arrayListOf(Property("goals", "clean test"), Property("localRepoScope", "agent"), Property("maven.path", "%teamcity.tool.maven.DEFAULT%"), Property("pomLocation", "ch-simple/pom.xml")))))))
+        val buildType = testDataProvider.getObject<BuildTypeRequestDto>("build-type")
+        buildType.project.id = projectId
 
         val buildTypeId = apiClient.createResource("buildTypes", buildType)
 
@@ -82,15 +79,13 @@ class TeamCityTest {
     @Test
     @DisplayName("Should create a build configuration vcs root entry successfully")
     fun testCreateBuildConfigurationVcsRootEntry() {
-        val project = ProjectRequestDto(projectName)
+        val project = testDataProvider.getObject<ProjectRequestDto>("project")
         projectId = apiClient.createResource("projects", project)
-        val vcsRoot = VcsRootRequestDto(githubUrl, "jetbrains.git", Project(projectId),
-            Properties(arrayListOf(Property("authMethod", "ANONYMOUS"), Property("branch", "refs/heads/master"), Property("url", githubUrl)))
-        )
+        val vcsRoot = testDataProvider.getObject<VcsRootRequestDto>("vcs-root")
+        vcsRoot.project.id = projectId
         val vcsRootId = apiClient.createResource("vcs-roots", vcsRoot)
-        val buildType = BuildTypeRequestDto(buildConfigurationName, Project(projectId), BuildTypeSteps(
-            arrayListOf(BuildTypeStep("MavenBuildTestStep", "Maven2", Properties(
-                arrayListOf(Property("goals", "clean test"), Property("localRepoScope", "agent"), Property("maven.path", "%teamcity.tool.maven.DEFAULT%"), Property("pomLocation", "ch-simple/pom.xml")))))))
+        val buildType = testDataProvider.getObject<BuildTypeRequestDto>("build-type")
+        buildType.project.id = projectId
         val buildTypeId = apiClient.createResource("buildTypes", buildType)
         val vcsRootEntry = VcsRootEntryDto(vcsRootId, VcsRoot(vcsRootId))
 
@@ -102,15 +97,13 @@ class TeamCityTest {
     @Test
     @DisplayName("Should execute a build configuration successfully")
     fun testExecuteBuildConfiguration() {
-        val project = ProjectRequestDto(projectName)
+        val project = testDataProvider.getObject<ProjectRequestDto>("project")
         projectId = apiClient.createResource("projects", project)
-        val vcsRoot = VcsRootRequestDto(githubUrl, "jetbrains.git", Project(projectId),
-            Properties(arrayListOf(Property("authMethod", "ANONYMOUS"), Property("branch", "refs/heads/master"), Property("url", githubUrl)))
-        )
+        val vcsRoot = testDataProvider.getObject<VcsRootRequestDto>("vcs-root")
+        vcsRoot.project.id = projectId
         val vcsRootId = apiClient.createResource("vcs-roots", vcsRoot)
-        val buildType = BuildTypeRequestDto(buildConfigurationName, Project(projectId), BuildTypeSteps(
-            arrayListOf(BuildTypeStep("MavenBuildTestStep", "Maven2", Properties(
-                arrayListOf(Property("goals", "clean test"), Property("localRepoScope", "agent"), Property("maven.path", "%teamcity.tool.maven.DEFAULT%"), Property("pomLocation", "ch-simple/pom.xml")))))))
+        val buildType = testDataProvider.getObject<BuildTypeRequestDto>("build-type")
+        buildType.project.id = projectId
         val buildTypeId = apiClient.createResource("buildTypes", buildType)
         val vcsRootEntry = VcsRootEntryDto(vcsRootId, VcsRoot(vcsRootId))
         apiClient.createResource("buildTypes/id:$buildTypeId/vcs-root-entries", vcsRootEntry)

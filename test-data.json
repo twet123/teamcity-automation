@@ -1,0 +1,62 @@
+{
+  "project": {
+    "name": "SimpleMavenSample"
+  },
+  "vcs-root": {
+    "name": "https://github.com/mkjetbrains/SimpleMavenSample",
+    "vcsName": "jetbrains.git",
+    "project": {
+      "id": ""
+    },
+    "properties": {
+      "property": [
+        {
+          "name": "authMethod",
+          "value": "ANONYMOUS"
+        },
+        {
+          "name": "branch",
+          "value": "refs/heads/master"
+        },
+        {
+          "name": "url",
+          "value": "https://github.com/mkjetbrains/SimpleMavenSample"
+        }
+      ]
+    }
+  },
+  "build-type": {
+    "name": "MavenBuildTest",
+    "project": {
+      "id": ""
+    },
+    "steps": {
+      "step": [
+        {
+          "name": "MavenBuildTestStep",
+          "type": "Maven2",
+          "properties": {
+            "property": [
+              {
+                "name": "goals",
+                "value": "clean test"
+              },
+              {
+                "name": "localRepoScope",
+                "value": "agent"
+              },
+              {
+                "name": "maven.path",
+                "value": "%teamcity.tool.maven.DEFAULT%"
+              },
+              {
+                "name": "pomLocation",
+                "value": "ch-simple/pom.xml"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
